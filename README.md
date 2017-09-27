@@ -4,19 +4,31 @@ This module validate POST request from GitHub and execute linux command from Ngi
 
 ## Installing
 
-Go to Nginx config directory:
+Before install luarocks you need install Nginx Extra and LuaJIT for support lua language in nginx config files:
+
+```bash
+apt-get install nginx-extras luajit
+```
+
+- Install dependecies lua modules via [luarocks](https://luarocks.org/):
+
+```bash
+luarocks install JSON4Lua && luarocks install luacrypto
+```
+
+- Go to Nginx config directory:
 
 ```bash
 cd /etc/nginx
 ```
 
-Create lua script directory:
+- Create lua script directory:
 
 ```bash
 mkdir lua && cd lua
 ```
 
-Clone this repository:
+- Clone this repository:
 
 ```bash
 git clone git@github.com:ZeusLimited/lua-nginx-deploy.git
