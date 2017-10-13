@@ -106,7 +106,7 @@ function deploy.run ()
     handle:close()
 
     ngx.say (result)
-    execute(project .. ": Деплой выполенен.")
+    execute(project .. ": ```" .. result .. "```")
     return ngx.exit (ngx.HTTP_OK)
 end
 
