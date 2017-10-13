@@ -13,7 +13,7 @@ local json = require "json"
 local crypto = require "crypto"
 
 -- public global variable
-local project = _G.secret
+local project = _G.project
 local secret = _G.secret
 local event = _G.event
 local branch = _G.branch
