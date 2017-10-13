@@ -31,7 +31,7 @@ mkdir lua && cd lua
 - Clone this repository:
 
 ```bash
-git clone git@github.com:ZeusLimited/lua-nginx-deploy.git
+git clone https://github.com/ZeusLimited/lua-nginx-deploy.git
 ``` 
 
 ## Configuration

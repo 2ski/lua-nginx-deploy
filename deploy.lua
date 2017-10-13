@@ -12,10 +12,14 @@
 local json = require "json"
 local crypto = require "crypto"
 
+-- public global variable
+local project = _G.secret
 local secret = _G.secret
 local event = _G.event
 local branch = _G.branch
 local command = _G.command
+
+local slackWebHook = _G.webhook_url
 
 local deploy = {}
 
@@ -37,10 +41,18 @@ local function verify_signature (hub_sign, data)
     return const_eq(hub_sign, sign)
 end
 
+local function execute(message)
+    local handle = io.popen('curl -X POST -H \'Content-type: application/json\' --data \'{"text":"' .. message .. '"}\' ' .. slackWebHook)
+    handle:close()
+end
+
+--- Validate inbound request
+-- @return mixed
 function deploy.validate_hook ()
     -- should be POST method
     if ngx.req.get_method() ~= "POST" then
         ngx.log(ngx.ERR, "wrong event request method: ", ngx.req.get_method())
+        execute(project .. ": Не правильный запрос.")
         return ngx.exit (ngx.HTTP_NOT_ALLOWED)
     end
 
@@ -48,12 +60,14 @@ function deploy.validate_hook ()
     -- with correct header
     if headers['X-GitHub-Event'] ~= event then
         ngx.log(ngx.ERR, "wrong event type: ", headers['X-GitHub-Event'])
+        execute(project .. ": Не правильный тип.")
         return ngx.exit (ngx.HTTP_NOT_ACCEPTABLE)
     end
 
     -- should be json encoded request
     if headers['Content-Type'] ~= 'application/json' then
         ngx.log(ngx.ERR, "wrong content type header: ", headers['Content-Type'])
+        execute(project .. ": Не правильный формат.")
         return ngx.exit (ngx.HTTP_NOT_ACCEPTABLE)
     end
 
@@ -63,12 +77,14 @@ function deploy.validate_hook ()
 
     if not data then
         ngx.log(ngx.ERR, "failed to get request body")
+        execute(project .. ": Пустое тело запроса.")
         return ngx.exit (ngx.HTTP_BAD_REQUEST)
     end
 
     -- validate GH signature
     if not verify_signature(headers['X-Hub-Signature'], data) then
         ngx.log(ngx.ERR, "wrong webhook signature")
+        execute(project .. ": Не правильная подпись.")
         return ngx.exit (ngx.HTTP_FORBIDDEN)
     end
 
@@ -76,6 +92,7 @@ function deploy.validate_hook ()
     -- on master branch
     if data['ref'] ~= branch then
         ngx.say("Skip branch ", data['ref'])
+        execute(project .. ": Не правильная ветка.")
         return ngx.exit (ngx.HTTP_OK)
     end
 
@@ -89,6 +106,7 @@ function deploy.run ()
     handle:close()
 
     ngx.say (result)
+    execute(project .. ": Деплой выполенен.")
     return ngx.exit (ngx.HTTP_OK)
 end
 
